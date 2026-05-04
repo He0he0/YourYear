@@ -6,12 +6,13 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const plannerRoutes = require("./routes/planner");
 const userRoutes = require("./routes/users");
+const universitiesRoutes = require("./routes/universities");
 
 const app = express();
 
 app.use(cors({
   origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.options("*", cors());
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/planner", plannerRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/universities", universitiesRoutes);
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
