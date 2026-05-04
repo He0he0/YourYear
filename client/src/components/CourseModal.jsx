@@ -59,7 +59,7 @@ export default function CourseModal({ open, onClose, onSave, initial = null, tit
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <Select label="Grade" value={form.grade} onChange={e => set('grade', e.target.value)}>
             <option value="">—</option>
-            {['A+','A','A-','B+','B','B-','C+','C','C-','D','F','P','NP','IP'].map(g => (
+            {['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F','P','NP','IP'].map(g => (
               <option key={g} value={g}>{g}</option>
             ))}
           </Select>

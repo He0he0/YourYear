@@ -1,13 +1,21 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { getPlanner, savePlanner } from '../utils/api';
 import { useAuth } from './AuthContext';
 import { v4 as uuid } from 'uuid';
 
 const PlannerContext = createContext(null);
 
+const GRADE_POINTS = {
+  'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+  'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+  'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+  'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+  'F': 0.0,
+};
+
 const TERM_NAMES = {
-  semester: ['Fall', 'Spring'],
-  quarter: ['Fall', 'Winter', 'Spring'],
+  semester: ['Fall', 'Spring', 'Summer'],
+  quarter: ['Fall', 'Winter', 'Spring', 'Summer'],
 };
 
 export function PlannerProvider({ children }) {
@@ -32,11 +40,28 @@ export function PlannerProvider({ children }) {
 
   // ─── Years ────────────────────────────────────────────────────────────────
 
+  const restructureYears = useCallback((newStructure) => {
+    const newTermNames = TERM_NAMES[newStructure];
+    const freed = [];
+    const next = years.map(year => {
+      year.terms.forEach(t => {
+        if (!newTermNames.includes(t.name)) freed.push(...t.courses);
+      });
+      const existingByName = Object.fromEntries(year.terms.map(t => [t.name, t]));
+      const terms = newTermNames.map(name => existingByName[name] || { id: uuid(), name, courses: [] });
+      return { ...year, terms };
+    });
+    const nextClipboard = [...clipboard, ...freed];
+    setYears(next);
+    setClipboard(nextClipboard);
+    persist(next, nextClipboard);
+  }, [years, clipboard, persist]);
+
   const addYear = () => {
     const structure = user?.structure || 'semester';
     const termNames = TERM_NAMES[structure];
     const yearNum = years.length + 1;
-    const label = `Year ${yearNum}`;
+    const label = user?.startYear ? String(user.startYear + years.length) : `Year ${yearNum}`;
     const terms = termNames.map(name => ({ id: uuid(), name, courses: [] }));
     const newYear = { id: uuid(), label, terms };
     const next = [...years, newYear];
@@ -185,13 +210,31 @@ export function PlannerProvider({ children }) {
     persist(years, nextClipboard);
   };
 
+  const gpa = useMemo(() => {
+    let totalPoints = 0;
+    let totalCredits = 0;
+    for (const year of years) {
+      for (const term of year.terms) {
+        for (const course of term.courses) {
+          if (course.units && course.grade && course.grade in GRADE_POINTS) {
+            totalPoints += course.units * GRADE_POINTS[course.grade];
+            totalCredits += course.units;
+          }
+        }
+      }
+    }
+    if (totalCredits === 0) return null;
+    return (totalPoints / totalCredits).toFixed(2);
+  }, [years]);
+
   return (
     <PlannerContext.Provider value={{
-      years, clipboard, loaded,
+      years, clipboard, loaded, gpa,
       addYear, removeYear, addTerm, removeTerm,
       addCourseToClipboard, removeCourseFromClipboard,
       moveCourseToTerm, moveCourseToClipboard,
       editCourse, deleteCourse, addCoursesToClipboard,
+      restructureYears,
       TERM_NAMES,
     }}>
       {children}

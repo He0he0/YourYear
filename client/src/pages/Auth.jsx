@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Input, Button } from '../components/UI';
+import { Input, Button, UniversitySelect } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { login as apiLogin, register as apiRegister } from '../utils/api';
+import { US_UNIVERSITIES } from '../data/usUniversities';
 
 function AuthShell({ title, subtitle, children }) {
   return (
@@ -79,7 +80,7 @@ export function Login() {
 export function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [form, setForm] = useState({ name: '', email: '', password: '', structure: 'semester' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', structure: 'semester', university: '', startYear: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -89,6 +90,8 @@ export function Register() {
     e?.preventDefault();
     setError('');
     if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    const yr = Number(form.startYear);
+    if (!form.startYear || yr < 1900 || yr > 2100) { setError('Please enter a valid school start year.'); return; }
     setLoading(true);
     try {
       const { user } = await apiRegister(form);
@@ -116,6 +119,15 @@ export function Register() {
           value={form.email} onChange={e => set('email', e.target.value)} required />
         <Input label="Password" type="password" placeholder="Min. 6 characters"
           value={form.password} onChange={e => set('password', e.target.value)} required />
+        <UniversitySelect
+          label="University"
+          options={US_UNIVERSITIES}
+          value={form.university}
+          onChange={v => set('university', v)}
+        />
+        <Input label="School start year" type="number" placeholder="e.g. 2026"
+          min="1900" max="2100"
+          value={form.startYear} onChange={e => set('startYear', e.target.value)} required />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)' }}>Academic structure</label>
           <div style={{ display: 'flex', gap: '10px' }}>

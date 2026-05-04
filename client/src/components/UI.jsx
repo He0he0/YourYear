@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 // ─── Button ───────────────────────────────────────────────────────────────────
 const btnStyles = {
@@ -76,6 +76,82 @@ export function Select({ label, children, style, ...props }) {
       >
         {children}
       </select>
+    </div>
+  );
+}
+
+// ─── UniversitySelect ─────────────────────────────────────────────────────────
+export function UniversitySelect({ label, options = [], value, onChange, placeholder = 'Search for your university…' }) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = options
+    .filter(o => o.toLowerCase().includes(query.toLowerCase()))
+    .slice(0, 80);
+
+  const inputValue = open ? query : (value || '');
+
+  const inputStyle = {
+    width: '100%', padding: '10px 12px',
+    background: 'var(--surface)', border: '1px solid var(--border)',
+    borderRadius: open ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)',
+    fontSize: '14px', color: 'var(--text)',
+    boxSizing: 'border-box', outline: 'none',
+    transition: 'border-color 0.15s',
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '100%' }}>
+      {label && <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)' }}>{label}</label>}
+      <div ref={containerRef} style={{ position: 'relative' }}>
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={inputValue}
+          onChange={e => { setQuery(e.target.value); onChange(''); setOpen(true); }}
+          onFocus={() => { setQuery(''); setOpen(true); }}
+          style={inputStyle}
+          onMouseEnter={e => { if (!open) e.target.style.borderColor = 'var(--accent)'; }}
+          onMouseLeave={e => { if (!open) e.target.style.borderColor = 'var(--border)'; }}
+        />
+        {open && (
+          <div style={{
+            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
+            background: 'var(--surface)',
+            border: '1px solid var(--border)', borderTop: 'none',
+            borderRadius: '0 0 var(--radius) var(--radius)',
+            maxHeight: '220px', overflowY: 'auto',
+            boxShadow: 'var(--shadow-md)',
+          }}>
+            {filtered.length === 0 ? (
+              <div style={{ padding: '10px 12px', fontSize: '14px', color: 'var(--text-muted)' }}>No results</div>
+            ) : filtered.map(opt => (
+              <div
+                key={opt}
+                onMouseDown={() => { onChange(opt); setQuery(''); setOpen(false); }}
+                style={{
+                  padding: '10px 12px', fontSize: '14px', cursor: 'pointer',
+                  background: opt === value ? 'var(--accent-bg)' : 'transparent',
+                  color: opt === value ? 'var(--accent)' : 'var(--text)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-bg)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = opt === value ? 'var(--accent-bg)' : 'transparent'; }}
+              >
+                {opt}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

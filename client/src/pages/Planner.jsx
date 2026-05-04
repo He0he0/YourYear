@@ -172,7 +172,7 @@ export default function Planner() {
                       display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px',
                     }}>
                       <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '20px' }}>
-                        {year.label}
+                        {user?.startYear ? String(user.startYear + yi) : year.label}
                       </h2>
                       <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                         {year.terms.reduce((s, t) => s + t.courses.reduce((u, c) => u + (Number(c.units) || 0), 0), 0)} units

@@ -2,16 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Button, Select } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
+import { usePlanner } from '../context/PlannerContext';
 import { updateProfile } from '../utils/api';
 
 export default function Profile() {
   const { user, updateUser, logout } = useAuth();
+  const { restructureYears, gpa } = usePlanner();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
     major: user?.major || '',
     structure: user?.structure || 'semester',
+    university: user?.university || '',
+    startYear: user?.startYear || '',
   });
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -21,9 +25,13 @@ export default function Profile() {
 
   const handleSave = async () => {
     setError(''); setSaved(false); setLoading(true);
+    const prevStructure = user?.structure;
     try {
       const updated = await updateProfile(user.id, form);
       updateUser(updated);
+      if (form.structure !== prevStructure) {
+        restructureYears(form.structure);
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
@@ -79,6 +87,9 @@ export default function Profile() {
             <Input label="Full name" value={form.name} onChange={e => set('name', e.target.value)} />
             <Input label="Email" type="email" value={form.email} onChange={e => set('email', e.target.value)} />
             <Input label="Major" placeholder="e.g. Computer Science" value={form.major} onChange={e => set('major', e.target.value)} />
+            <Input label="School start year" type="number" placeholder="e.g. 2026"
+              min="1900" max="2100"
+              value={form.startYear} onChange={e => set('startYear', e.target.value ? Number(e.target.value) : '')} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)' }}>Academic structure</label>
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -96,6 +107,16 @@ export default function Profile() {
                     <span style={{ fontSize: '14px', textTransform: 'capitalize' }}>{s}</span>
                   </label>
                 ))}
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)' }}>Cumulative GPA</label>
+              <div style={{
+                padding: '10px 12px', borderRadius: 'var(--radius)',
+                border: '1px solid var(--border)', background: 'var(--bg)',
+                fontSize: '14px', color: gpa !== null ? 'var(--text)' : 'var(--text-muted)',
+              }}>
+                {gpa !== null ? gpa : 'No graded courses yet'}
               </div>
             </div>
             <Button onClick={handleSave} disabled={loading} style={{ marginTop: '8px' }}>

@@ -22,10 +22,14 @@ async function authFetch(path, options = {}) {
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
-export async function register({ name, email, password, structure }) {
+export async function getUniversities() {
+  return authFetch('/api/universities');
+}
+
+export async function register({ name, email, password, structure, university, startYear }) {
   const data = await authFetch('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ name, email, password, structure }),
+    body: JSON.stringify({ name, email, password, structure, university, startYear }),
   });
   localStorage.setItem('yy_token', data.token);
   localStorage.setItem('yy_user', JSON.stringify(data.user));
