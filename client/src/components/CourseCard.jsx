@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export default function CourseCard({ course, onEdit, onDelete, onSendToClipboard, location }) {
+export default function CourseCard({ course, onEdit, onDelete, onSendToClipboard, location, showCheckbox = false, isSelected = false, onToggleSelect }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -28,33 +28,56 @@ export default function CourseCard({ course, onEdit, onDelete, onSendToClipboard
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <div
+        {...listeners}
         style={{
-          background: 'var(--surface)', border: '1px solid var(--border)',
+          background: isSelected ? 'var(--accent-bg)' : 'var(--surface)',
+          border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
           borderRadius: 'var(--radius)', padding: '10px 12px',
           boxShadow: 'var(--shadow)', position: 'relative',
-          cursor: 'default', userSelect: 'none',
+          cursor: 'grab', userSelect: 'none',
+          transition: 'background 0.12s, border-color 0.12s',
         }}
+        title="Drag to move"
       >
-        {/* Drag handle */}
-        <div
-          {...listeners}
-          style={{
-            position: 'absolute', left: 0, top: 0, bottom: 0, width: '14px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'grab', color: 'var(--border)',
-            borderRight: '1px solid var(--border)',
-            borderRadius: 'var(--radius) 0 0 var(--radius)',
-          }}
-          title="Drag to move"
-        >
-          <svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor">
-            <circle cx="2" cy="2" r="1.5"/><circle cx="6" cy="2" r="1.5"/>
-            <circle cx="2" cy="7" r="1.5"/><circle cx="6" cy="7" r="1.5"/>
-            <circle cx="2" cy="12" r="1.5"/><circle cx="6" cy="12" r="1.5"/>
-          </svg>
-        </div>
+        {/* Left strip: checkbox (selection mode) or drag dots */}
+        {showCheckbox ? (
+          <div
+            onPointerDown={e => e.stopPropagation()}
+            onClick={e => { e.stopPropagation(); onToggleSelect?.(course.id); }}
+            style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0, width: '24px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', zIndex: 1,
+              borderRight: '1px solid var(--border)',
+              borderRadius: 'var(--radius) 0 0 var(--radius)',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => {}}
+              style={{ cursor: 'pointer', accentColor: 'var(--accent)', width: '13px', height: '13px', pointerEvents: 'none' }}
+            />
+          </div>
+        ) : (
+          <div
+            style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0, width: '14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--border)', pointerEvents: 'none',
+              borderRight: '1px solid var(--border)',
+              borderRadius: 'var(--radius) 0 0 var(--radius)',
+            }}
+          >
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor">
+              <circle cx="2" cy="2" r="1.5"/><circle cx="6" cy="2" r="1.5"/>
+              <circle cx="2" cy="7" r="1.5"/><circle cx="6" cy="7" r="1.5"/>
+              <circle cx="2" cy="12" r="1.5"/><circle cx="6" cy="12" r="1.5"/>
+            </svg>
+          </div>
+        )}
 
-        <div style={{ paddingLeft: '14px' }}>
+        <div style={{ paddingLeft: showCheckbox ? '24px' : '14px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

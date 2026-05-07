@@ -2,17 +2,17 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const registerUser = async ({ name, email, password, structure, university, startYear }) => {
+const registerUser = async ({ name, email, password, structure, university, startYear, minor }) => {
   const existing = await User.findOne({ email });
   if (existing) throw new Error("Email already in use");
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = await User.create({ name, email, password: passwordHash, structure, university: university || '', startYear: startYear || null });
+  const user = await User.create({ name, email, password: passwordHash, structure, university: university || '', startYear: startYear || null, minor: minor || '' });
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
   return {
-    user: { id: user._id, name: user.name, email: user.email, structure: user.structure, major: user.major, university: user.university, startYear: user.startYear },
+    user: { id: user._id, name: user.name, email: user.email, structure: user.structure, major: user.major, minor: user.minor, university: user.university, startYear: user.startYear },
     token,
   };
 };
@@ -27,7 +27,7 @@ const loginUser = async ({ email, password }) => {
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
   return {
-    user: { id: user._id, name: user.name, email: user.email, structure: user.structure, major: user.major, university: user.university, startYear: user.startYear },
+    user: { id: user._id, name: user.name, email: user.email, structure: user.structure, major: user.major, minor: user.minor, university: user.university, startYear: user.startYear },
     token,
   };
 };

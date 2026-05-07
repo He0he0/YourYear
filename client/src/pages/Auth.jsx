@@ -80,7 +80,7 @@ export function Login() {
 export function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [form, setForm] = useState({ name: '', email: '', password: '', structure: 'semester', university: '', startYear: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', structure: 'semester', university: '', startYear: '', minor: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -125,6 +125,12 @@ export function Register() {
           value={form.university}
           onChange={v => set('university', v)}
         />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <Input label="Major" placeholder="e.g. Computer Science"
+            value={form.major || ''} onChange={e => set('major', e.target.value)} />
+          <Input label="Minor (optional)" placeholder="e.g. Mathematics"
+            value={form.minor} onChange={e => set('minor', e.target.value)} />
+        </div>
         <Input label="School start year" type="number" placeholder="e.g. 2026"
           min="1900" max="2100"
           value={form.startYear} onChange={e => set('startYear', e.target.value)} required />

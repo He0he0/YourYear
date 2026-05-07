@@ -26,10 +26,10 @@ export async function getUniversities() {
   return authFetch('/api/universities');
 }
 
-export async function register({ name, email, password, structure, university, startYear }) {
+export async function register({ name, email, password, structure, university, startYear, minor }) {
   const data = await authFetch('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ name, email, password, structure, university, startYear }),
+    body: JSON.stringify({ name, email, password, structure, university, startYear, minor }),
   });
   localStorage.setItem('yy_token', data.token);
   localStorage.setItem('yy_user', JSON.stringify(data.user));

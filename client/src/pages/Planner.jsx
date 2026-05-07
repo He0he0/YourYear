@@ -19,8 +19,8 @@ export default function Planner() {
   const { user } = useAuth();
   const {
     years, clipboard, loaded,
-    addYear, removeYear, addTerm, removeTerm,
-    addCourseToClipboard, moveCourseToTerm, moveCourseToClipboard,
+    addYear, removeYear, addTerm, removeTerm, renameTerm,
+    addCourseToClipboard, moveCourseToTerm, moveCoursesToTerm, moveCourseToClipboard,
     editCourse, deleteCourse,
   } = usePlanner();
 
@@ -28,6 +28,14 @@ export default function Planner() {
   const [courseModal, setCourseModal] = useState({ open: false, course: null });
   const [addTermModal, setAddTermModal] = useState({ open: false, yearId: null });
   const [customTermName, setCustomTermName] = useState('');
+  const [selectedIds, setSelectedIds] = useState(new Set());
+
+  const toggleSelect = (id) => setSelectedIds(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+  const clearSelection = () => setSelectedIds(new Set());
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -54,15 +62,18 @@ export default function Planner() {
     if (!over) return;
     const courseId = active.id;
     const dest = over.id;
+    const isMulti = selectedIds.has(courseId) && selectedIds.size > 1;
 
     if (dest === 'clipboard') {
       moveCourseToClipboard(courseId);
+      if (isMulti) clearSelection();
       return;
     }
 
     if (typeof dest === 'string' && dest.startsWith('term:')) {
       const [, yearId, termId] = dest.split(':');
-      moveCourseToTerm(courseId, yearId, termId);
+      if (isMulti) { moveCoursesToTerm([...selectedIds], yearId, termId); clearSelection(); }
+      else moveCourseToTerm(courseId, yearId, termId);
       return;
     }
 
@@ -70,7 +81,8 @@ export default function Planner() {
     for (const y of years) {
       for (const t of y.terms) {
         if (t.courses.find(c => c.id === dest)) {
-          moveCourseToTerm(courseId, y.id, t.id);
+          if (isMulti) { moveCoursesToTerm([...selectedIds], y.id, t.id); clearSelection(); }
+          else moveCourseToTerm(courseId, y.id, t.id);
           return;
         }
       }
@@ -124,6 +136,9 @@ export default function Planner() {
           onAddCourse={openAddCourse}
           onEditCourse={openEditCourse}
           onDeleteCourse={deleteCourse}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+          onClearSelection={clearSelection}
         />
 
         {/* Main planner area */}
@@ -135,7 +150,6 @@ export default function Planner() {
           }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px' }}>YourYear</div>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <Button variant="secondary" size="sm" onClick={addYear}>+ Add Year</Button>
               <button
                 onClick={() => navigate('/profile')}
                 style={{
@@ -177,10 +191,6 @@ export default function Planner() {
                       <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                         {year.terms.reduce((s, t) => s + t.courses.reduce((u, c) => u + (Number(c.units) || 0), 0), 0)} units
                       </span>
-                      <Button variant="ghost" size="sm"
-                        onClick={() => setAddTermModal({ open: true, yearId: year.id })}>
-                        + Term
-                      </Button>
                       <Button variant="ghost" size="sm" style={{ color: 'var(--danger)' }}
                         onClick={() => removeYear(year.id)}>
                         Remove year
@@ -198,6 +208,7 @@ export default function Planner() {
                           onDeleteCourse={deleteCourse}
                           onSendToClipboard={moveCourseToClipboard}
                           onRemoveTerm={removeTerm}
+                          onRenameTerm={renameTerm}
                         />
                       ))}
                       {year.terms.length === 0 && (
@@ -208,6 +219,9 @@ export default function Planner() {
                     </div>
                   </div>
                 ))}
+              <Button variant="secondary" size="sm" onClick={addYear} style={{ marginTop: '8px' }}>
+                + Add Year
+              </Button>
               </div>
             )}
           </div>
@@ -217,12 +231,22 @@ export default function Planner() {
       {/* Drag overlay */}
       <DragOverlay>
         {activeCourse ? (
-          <div style={{ opacity: 0.9, transform: 'scale(1.02)' }}>
+          <div style={{ opacity: 0.9, transform: 'scale(1.02)', position: 'relative' }}>
             <CourseCard
               course={activeCourse}
               location="overlay"
               onEdit={() => {}} onDelete={() => {}} onSendToClipboard={() => {}}
             />
+            {selectedIds.has(activeCourse.id) && selectedIds.size > 1 && (
+              <div style={{
+                position: 'absolute', top: -6, right: -6,
+                background: 'var(--accent)', color: '#fff',
+                borderRadius: '10px', fontSize: '11px', fontWeight: 700,
+                padding: '1px 7px', minWidth: '18px', textAlign: 'center',
+              }}>
+                {selectedIds.size}
+              </div>
+            )}
           </div>
         ) : null}
       </DragOverlay>

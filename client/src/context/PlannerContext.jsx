@@ -90,6 +90,47 @@ export function PlannerProvider({ children }) {
     persist(next, clipboard);
   };
 
+  const moveCoursesToTerm = useCallback((courseIds, yearId, termId) => {
+    const idSet = new Set(courseIds);
+    const toMove = [];
+
+    const nextClipboard = clipboard.filter(c => {
+      if (idSet.has(c.id)) { toMove.push(c); return false; }
+      return true;
+    });
+
+    let nextYears = years.map(y => ({
+      ...y,
+      terms: y.terms.map(t => ({
+        ...t,
+        courses: t.courses.filter(c => {
+          if (idSet.has(c.id)) { toMove.push(c); return false; }
+          return true;
+        }),
+      })),
+    }));
+
+    nextYears = nextYears.map(y =>
+      y.id === yearId
+        ? { ...y, terms: y.terms.map(t => t.id === termId ? { ...t, courses: [...t.courses, ...toMove] } : t) }
+        : y
+    );
+
+    setYears(nextYears);
+    setClipboard(nextClipboard);
+    persist(nextYears, nextClipboard);
+  }, [years, clipboard, persist]);
+
+  const renameTerm = (yearId, termId, name) => {
+    const next = years.map(y =>
+      y.id === yearId
+        ? { ...y, terms: y.terms.map(t => t.id === termId ? { ...t, name } : t) }
+        : y
+    );
+    setYears(next);
+    persist(next, clipboard);
+  };
+
   const removeTerm = (yearId, termId) => {
     const year = years.find(y => y.id === yearId);
     const term = year?.terms.find(t => t.id === termId);
@@ -231,6 +272,7 @@ export function PlannerProvider({ children }) {
     <PlannerContext.Provider value={{
       years, clipboard, loaded, gpa,
       addYear, removeYear, addTerm, removeTerm,
+      moveCoursesToTerm, renameTerm,
       addCourseToClipboard, removeCourseFromClipboard,
       moveCourseToTerm, moveCourseToClipboard,
       editCourse, deleteCourse, addCoursesToClipboard,

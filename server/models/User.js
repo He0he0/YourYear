@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
   email:     { type: String, required: true, unique: true, lowercase: true, trim: true },
   password:  { type: String, required: true },
   major:      { type: String, default: '' },
+  minor:      { type: String, default: '' },
   university: { type: String, default: '' },
   startYear:  { type: Number, default: null },
   structure:  { type: String, enum: ['semester', 'quarter'], required: true },

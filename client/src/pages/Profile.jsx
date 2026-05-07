@@ -13,6 +13,7 @@ export default function Profile() {
     name: user?.name || '',
     email: user?.email || '',
     major: user?.major || '',
+    minor: user?.minor || '',
     structure: user?.structure || 'semester',
     university: user?.university || '',
     startYear: user?.startYear || '',
@@ -86,7 +87,10 @@ export default function Profile() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Input label="Full name" value={form.name} onChange={e => set('name', e.target.value)} />
             <Input label="Email" type="email" value={form.email} onChange={e => set('email', e.target.value)} />
-            <Input label="Major" placeholder="e.g. Computer Science" value={form.major} onChange={e => set('major', e.target.value)} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <Input label="Major" placeholder="e.g. Computer Science" value={form.major} onChange={e => set('major', e.target.value)} />
+              <Input label="Minor (optional)" placeholder="e.g. Mathematics" value={form.minor} onChange={e => set('minor', e.target.value)} />
+            </div>
             <Input label="School start year" type="number" placeholder="e.g. 2026"
               min="1900" max="2100"
               value={form.startYear} onChange={e => set('startYear', e.target.value ? Number(e.target.value) : '')} />
