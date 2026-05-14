@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  DndContext, DragOverlay, closestCorners,
+  DndContext, DragOverlay, closestCorners, pointerWithin,
   PointerSensor, useSensor, useSensors,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -134,7 +134,12 @@ export default function Planner() {
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCorners}
+    <DndContext
+      sensors={sensors}
+      collisionDetection={(args) => {
+        const within = pointerWithin(args);
+        return within.length > 0 ? within : closestCorners(args);
+      }}
       onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
