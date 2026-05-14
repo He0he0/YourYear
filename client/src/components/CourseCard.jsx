@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export default function CourseCard({ course, onEdit, onDelete, onSendToClipboard, location, showCheckbox = false, isSelected = false, onToggleSelect }) {
+export default function CourseCard({ course, onEdit, onDelete, onSendToClipboard, onExpand, location, showCheckbox = false, isSelected = false, onToggleSelect }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -30,127 +30,67 @@ export default function CourseCard({ course, onEdit, onDelete, onSendToClipboard
       <div
         {...listeners}
         style={{
-          background: isSelected ? 'var(--accent-bg)' : 'var(--surface)',
-          border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
-          borderRadius: 'var(--radius)', padding: '10px 12px',
-          boxShadow: 'var(--shadow)', position: 'relative',
+          display: 'flex', alignItems: 'stretch',
+          background: isSelected ? 'var(--course-accent-bg)' : 'var(--surface)',
+          border: `1px solid ${isSelected ? 'var(--course-accent)' : 'var(--border)'}`,
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow)',
+          overflow: 'hidden',
           cursor: 'grab', userSelect: 'none',
           transition: 'background 0.12s, border-color 0.12s',
         }}
-        title="Drag to move"
       >
-        {/* Left strip: checkbox (selection mode) or drag dots */}
+        {/* Left: drag dots or checkbox */}
         {showCheckbox ? (
           <div
             onPointerDown={e => e.stopPropagation()}
             onClick={e => { e.stopPropagation(); onToggleSelect?.(course.id); }}
             style={{
-              position: 'absolute', left: 0, top: 0, bottom: 0, width: '24px',
+              width: '36px', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', zIndex: 1,
-              borderRight: '1px solid var(--border)',
-              borderRadius: 'var(--radius) 0 0 var(--radius)',
+              cursor: 'pointer', borderRight: '1px solid var(--border)',
             }}
           >
             <input
               type="checkbox"
               checked={isSelected}
               onChange={() => {}}
-              style={{ cursor: 'pointer', accentColor: 'var(--accent)', width: '13px', height: '13px', pointerEvents: 'none' }}
+              style={{ cursor: 'pointer', accentColor: 'var(--course-accent)', width: '14px', height: '14px', pointerEvents: 'none' }}
             />
           </div>
         ) : (
-          <div
-            style={{
-              position: 'absolute', left: 0, top: 0, bottom: 0, width: '14px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'var(--border)', pointerEvents: 'none',
-              borderRight: '1px solid var(--border)',
-              borderRadius: 'var(--radius) 0 0 var(--radius)',
-            }}
-          >
-            <svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor">
-              <circle cx="2" cy="2" r="1.5"/><circle cx="6" cy="2" r="1.5"/>
-              <circle cx="2" cy="7" r="1.5"/><circle cx="6" cy="7" r="1.5"/>
-              <circle cx="2" cy="12" r="1.5"/><circle cx="6" cy="12" r="1.5"/>
+          <div style={{
+            width: '32px', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--border)', pointerEvents: 'none',
+          }}>
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+              <circle cx="2.5" cy="2.5" r="1.5"/><circle cx="7.5" cy="2.5" r="1.5"/>
+              <circle cx="2.5" cy="8" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/>
+              <circle cx="2.5" cy="13.5" r="1.5"/><circle cx="7.5" cy="13.5" r="1.5"/>
             </svg>
           </div>
         )}
 
-        <div style={{ paddingLeft: showCheckbox ? '24px' : '14px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent)' }}>{course.code}</span>
-                {course.units && (
-                  <span style={{
-                    fontSize: '10px', background: 'var(--accent-bg)', color: 'var(--accent)',
-                    padding: '1px 5px', borderRadius: '10px',
-                  }}>{course.units}u</span>
-                )}
-                {course.grade && (
-                  <span style={{
-                    fontSize: '10px', fontWeight: 600, color: gradeColor(course.grade),
-                    background: `${gradeColor(course.grade)}18`, padding: '1px 5px', borderRadius: '10px',
-                  }}>{course.grade}</span>
-                )}
-              </div>
-              <div
-                style={{ fontSize: '13px', color: 'var(--text)', marginTop: '2px', cursor: 'pointer' }}
-                onClick={() => setDetailOpen(v => !v)}
-                title="Click to expand"
-              >
-                {course.title}
-              </div>
-            </div>
-            {/* Menu */}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setMenuOpen(v => !v)}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-muted)', padding: '2px 4px', fontSize: '16px', lineHeight: 1,
-                }}
-              >⋯</button>
-              {menuOpen && (
-                <>
-                  <div
-                    style={{ position: 'fixed', inset: 0, zIndex: 99 }}
-                    onClick={() => setMenuOpen(false)}
-                  />
-                  <div style={{
-                    position: 'absolute', right: 0, top: '100%', zIndex: 100,
-                    background: 'var(--surface)', border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-md)',
-                    minWidth: '140px', overflow: 'hidden',
-                  }}>
-                    {[
-                      { label: 'Edit', action: () => { onEdit(course); setMenuOpen(false); } },
-                      location !== 'clipboard' && { label: 'Move to clipboard', action: () => { onSendToClipboard(course.id); setMenuOpen(false); } },
-                      { label: 'Delete', action: () => { onDelete(course.id); setMenuOpen(false); }, danger: true },
-                    ].filter(Boolean).map(item => (
-                      <button
-                        key={item.label}
-                        onClick={item.action}
-                        style={{
-                          display: 'block', width: '100%', padding: '9px 14px',
-                          background: 'none', border: 'none', cursor: 'pointer',
-                          textAlign: 'left', fontSize: '13px',
-                          color: item.danger ? 'var(--danger)' : 'var(--text)',
-                        }}
-                        onMouseEnter={e => e.target.style.background = 'var(--bg)'}
-                        onMouseLeave={e => e.target.style.background = 'none'}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
+        {/* Course info */}
+        <div style={{ flex: 1, padding: '16px 12px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>{course.code}</span>
+            {course.units && (
+              <span style={{
+                fontSize: '13px', background: 'var(--course-accent-bg)', color: 'var(--text)',
+                padding: '4px 12px', borderRadius: '999px', fontWeight: 500, border: '1px solid #d4edcc',
+              }}>{course.units}u</span>
+            )}
+            {course.grade && (
+              <span style={{
+                fontSize: '11px', fontWeight: 600, color: gradeColor(course.grade),
+                background: `${gradeColor(course.grade)}18`, padding: '2px 7px', borderRadius: '10px',
+              }}>{course.grade}</span>
+            )}
           </div>
+          <div style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{course.title}</div>
 
-          {/* Expanded detail */}
           {detailOpen && (course.description || course.prerequisites || course.notes) && (
             <div style={{
               marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)',
@@ -161,6 +101,73 @@ export default function CourseCard({ course, onEdit, onDelete, onSendToClipboard
               {course.notes && <p><strong>Notes:</strong> {course.notes}</p>}
             </div>
           )}
+        </div>
+
+        {/* ⋯ Menu */}
+        {location !== 'overlay' && (
+          <div style={{ position: 'relative', alignSelf: 'flex-start', paddingTop: '6px', paddingRight: '2px' }}>
+            <button
+              onPointerDown={e => e.stopPropagation()}
+              onClick={() => setMenuOpen(v => !v)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--text-muted)', padding: '2px 4px', fontSize: '15px', lineHeight: 1,
+              }}
+            >⋯</button>
+            {menuOpen && (
+              <>
+                <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setMenuOpen(false)} />
+                <div style={{
+                  position: 'absolute', right: 0, top: '100%', zIndex: 100,
+                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-md)',
+                  minWidth: '140px', overflow: 'hidden',
+                }}>
+                  {[
+                    onExpand && { label: 'Expand', action: () => { onExpand(course, false); setMenuOpen(false); } },
+                    { label: 'Edit', action: () => { onExpand ? onExpand(course, true) : onEdit(course); setMenuOpen(false); } },
+                    location !== 'clipboard' && { label: 'Move to clipboard', action: () => { onSendToClipboard(course.id); setMenuOpen(false); } },
+                    { label: 'Delete', action: () => { onDelete(course.id); setMenuOpen(false); }, danger: true },
+                  ].filter(Boolean).map(item => (
+                    <button
+                      key={item.label}
+                      onClick={item.action}
+                      style={{
+                        display: 'block', width: '100%', padding: '9px 14px',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        textAlign: 'left', fontSize: '13px',
+                        color: item.danger ? 'var(--danger)' : 'var(--text)',
+                      }}
+                      onMouseEnter={e => e.target.style.background = 'var(--bg)'}
+                      onMouseLeave={e => e.target.style.background = 'none'}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Right green panel */}
+        <div
+          onPointerDown={e => e.stopPropagation()}
+          onClick={() => onExpand ? onExpand(course, false) : setDetailOpen(v => !v)}
+          style={{
+            width: '44px', flexShrink: 0,
+            background: 'var(--course-accent-bg)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: location === 'overlay' ? 'grabbing' : 'pointer',
+            borderLeft: '1px solid #d4edcc',
+          }}
+        >
+          <svg
+            width="13" height="13" viewBox="0 0 24 24" fill="var(--course-accent)"
+            style={{ transform: detailOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}
+          >
+            <path d="M8 5v14l11-7z"/>
+          </svg>
         </div>
       </div>
     </div>

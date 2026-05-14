@@ -6,9 +6,11 @@
   --border: #E2DDD6;
   --text: #1A1814;
   --text-muted: #7A756D;
-  --accent: #2D5016;
-  --accent-light: #4A7A28;
-  --accent-bg: #EEF4E8;
+  --accent: #4A7FE4;
+  --accent-light: #6494EF;
+  --accent-bg: #EEF2FD;
+  --course-accent: #52A844;
+  --course-accent-bg: #EEF8EC;
   --danger: #C0392B;
   --danger-bg: #FDECEA;
   --radius: 8px;

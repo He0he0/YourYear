@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import CourseCard from './CourseCard';
 import { Button } from './UI';
 
-export default function Clipboard({ courses, onAddCourse, onEditCourse, onDeleteCourse, selectedIds, onToggleSelect, onClearSelection, isDragOver }) {
+export default function Clipboard({ courses, onAddCourse, onEditCourse, onDeleteCourse, selectedIds, onToggleSelect, onClearSelection, isDragOver, onExpandCourse }) {
   const { setNodeRef, isOver } = useDroppable({ id: 'clipboard' });
   const [hovered, setHovered] = useState(false);
 
@@ -46,7 +46,7 @@ export default function Clipboard({ courses, onAddCourse, onEditCourse, onDelete
             </button>
           )}
         </div>
-        <Button size="sm" onClick={onAddCourse} style={{ width: '100%' }}>
+        <Button size="sm" onClick={onAddCourse} style={{ width: '100%', borderRadius: '999px' }}>
           + Add Course
         </Button>
       </div>
@@ -71,6 +71,7 @@ export default function Clipboard({ courses, onAddCourse, onEditCourse, onDelete
               onEdit={onEditCourse}
               onDelete={onDeleteCourse}
               onSendToClipboard={() => {}}
+              onExpand={onExpandCourse}
               showCheckbox={showCheckboxes}
               isSelected={selectedIds.has(course.id)}
               onToggleSelect={onToggleSelect}
@@ -82,6 +83,15 @@ export default function Clipboard({ courses, onAddCourse, onEditCourse, onDelete
               paddingTop: '24px', lineHeight: 1.6,
             }}>
               No courses yet.<br />Add one above.
+            </div>
+          )}
+
+          {courses.length > 0 && (
+            <div style={{
+              textAlign: 'center', color: 'var(--border)', fontSize: '12px',
+              marginTop: 'auto', paddingTop: '16px', paddingBottom: '8px',
+            }}>
+              Drag from here
             </div>
           )}
         </div>
