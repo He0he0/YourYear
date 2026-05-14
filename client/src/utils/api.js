@@ -14,6 +14,12 @@ async function authFetch(path, options = {}) {
     },
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('yy_token');
+      localStorage.removeItem('yy_user');
+      window.location.href = '/login';
+      return;
+    }
     const msg = await res.json();
     throw new Error(msg.message || 'Request failed');
   }
