@@ -4,18 +4,22 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import CourseCard from './CourseCard';
 import { Button } from './UI';
 
-export default function Clipboard({ courses, onAddCourse, onEditCourse, onDeleteCourse, selectedIds, onToggleSelect, onClearSelection }) {
+export default function Clipboard({ courses, onAddCourse, onEditCourse, onDeleteCourse, selectedIds, onToggleSelect, onClearSelection, isDragOver }) {
   const { setNodeRef, isOver } = useDroppable({ id: 'clipboard' });
   const [hovered, setHovered] = useState(false);
 
   const showCheckboxes = hovered || selectedIds.size > 0;
+  const showDropHighlight = isOver || isDragOver;
 
   return (
     <div
+      ref={setNodeRef}
       style={{
         width: '240px', flexShrink: 0, display: 'flex', flexDirection: 'column',
-        background: 'var(--surface)', borderRight: '1px solid var(--border)',
+        background: showDropHighlight ? 'var(--accent-bg)' : 'var(--surface)',
+        borderRight: `1px solid ${showDropHighlight ? 'var(--accent-light, var(--accent))' : 'var(--border)'}`,
         height: '100%',
+        transition: 'background 0.15s, border-color 0.15s',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -54,13 +58,9 @@ export default function Clipboard({ courses, onAddCourse, onEditCourse, onDelete
         id="clipboard"
       >
         <div
-          ref={setNodeRef}
           style={{
             flex: 1, overflowY: 'auto', padding: '10px',
             display: 'flex', flexDirection: 'column', gap: '6px',
-            background: isOver ? 'var(--accent-bg)' : 'transparent',
-            transition: 'background 0.15s',
-            minHeight: '60px',
           }}
         >
           {courses.map(course => (

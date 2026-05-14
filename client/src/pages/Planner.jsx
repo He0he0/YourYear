@@ -25,6 +25,7 @@ export default function Planner() {
   } = usePlanner();
 
   const [activeCourse, setActiveCourse] = useState(null);
+  const [dragOverClipboard, setDragOverClipboard] = useState(false);
   const [courseModal, setCourseModal] = useState({ open: false, course: null });
   const [addTermModal, setAddTermModal] = useState({ open: false, yearId: null });
   const [customTermName, setCustomTermName] = useState('');
@@ -57,8 +58,15 @@ export default function Planner() {
     setActiveCourse(findCourse(active.id));
   };
 
+  const handleDragOver = ({ over }) => {
+    if (!over) { setDragOverClipboard(false); return; }
+    const dest = over.id;
+    setDragOverClipboard(dest === 'clipboard' || !!clipboard.find(c => c.id === dest));
+  };
+
   const handleDragEnd = ({ active, over }) => {
     setActiveCourse(null);
+    setDragOverClipboard(false);
     if (!over) return;
     const courseId = active.id;
     const dest = over.id;
@@ -127,7 +135,7 @@ export default function Planner() {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners}
-      onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
         {/* Sidebar */}
@@ -139,6 +147,7 @@ export default function Planner() {
           selectedIds={selectedIds}
           onToggleSelect={toggleSelect}
           onClearSelection={clearSelection}
+          isDragOver={dragOverClipboard}
         />
 
         {/* Main planner area */}
